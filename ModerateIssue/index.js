@@ -1,11 +1,10 @@
 const octokit = require("@octokit/rest")();
 const authenticate = require('./authenticate');
-const getLuisIntent = require('./get-luis-intent');
 
 module.exports = async function (context, data) {
   const { body } = data
   const { action, repository, issue, installation } = body;
-  const { number, title } = issue;
+  const { number } = issue;
   const repo = repository.name;
   const owner = repository.owner.login;
   const installationId = installation.id;
@@ -14,12 +13,11 @@ module.exports = async function (context, data) {
     let response = "";
     if (action === "opened") {
       await authenticate(octokit, installationId)
-      const label = await getLuisIntent(title);
-      response = await octokit.issues.addLabels({
+      response = await octokit.issues.createComment({
         owner, 
         repo, 
         number, 
-        labels: [label]
+        body: "Thanks for submitting this issue. We will take a look at it later!"
       })
     }
     context.res = {
